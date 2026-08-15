@@ -63,3 +63,7 @@ registerForm.addEventListener("submit", async (e) => {
     showResult(err.message, true);
   }
 });
+
+const res = await fetch("http://localhost:8080/api/users/1", {
+  credentials: "include",
+});
