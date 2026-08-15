@@ -1,0 +1,78 @@
+version: '3.8'
+
+networks:
+  fms-network:
+    driver: bridge
+
+services:
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - fms-network
+
+  user-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fms
+      POSTGRES_PASSWORD: fms_password
+      POSTGRES_DB: userdb
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    networks:
+      - fms-network
+
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "8083:8083"
+    networks:
+      - fms-network
+    depends_on:
+      - user-db
+
+  flight-service:
+    build: ./flight-service
+    container_name: flight-service
+    ports:
+      - "8081:8081"
+    networks:
+      - fms-network
+
+  booking-service:
+    build: ./booking-service
+    container_name: booking-service
+    ports:
+      - "8082:8082"
+    networks:
+      - fms-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+    depends_on:
+      - redis
+      - user-service
+      - flight-service
+      - booking-service
+    networks:
+      - fms-network
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5500:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - fms-network
+
+volumes:
+  user-db-data:
+
