@@ -15,19 +15,30 @@ public class ApiKeyFilter implements Filter {
 
     private static final String HEADER_NAME = "X-API-KEY";
 
-    @Override
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
-            throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) req;
-        HttpServletResponse response = (HttpServletResponse) res;
+@Override
+public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+        throws IOException, ServletException {
+    HttpServletRequest request = (HttpServletRequest) req;
+    HttpServletResponse response = (HttpServletResponse) res;
 
-        String providedKey = request.getHeader(HEADER_NAME);
-        if (providedKey == null || !providedKey.equals(validApiKey)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"Missing or invalid API key\"}");
-            return;
-        }
-        chain.doFilter(req, res);
+    // allow the local UI to call this API from a different origin
+    response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    response.setHeader("Access-Control-Allow-Headers", "X-API-KEY, Content-Type");
+
+    // browsers send a preflight OPTIONS request before the real one — let it through
+    if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+        response.setStatus(HttpServletResponse.SC_OK);
+        return;
     }
+
+    String providedKey = request.getHeader(HEADER_NAME);
+    if (providedKey == null || !providedKey.equals(validApiKey)) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"Missing or invalid API key\"}");
+        return;
+    }
+    chain.doFilter(req, res);
+}
 }
