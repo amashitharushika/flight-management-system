@@ -24,7 +24,9 @@ public class ApiKeyFilter implements Filter {
 
         boolean isPublic = path.startsWith("/h2-console")
                 || path.equals("/api/users/register")
-                || path.equals("/api/users/login");
+                || path.equals("/api/users/login")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs");
 
         if (isPublic) {
             chain.doFilter(req, res);
