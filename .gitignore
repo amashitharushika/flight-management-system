@@ -23,9 +23,7 @@
 hs_err_pid*
 replay_pid*
 
-feature/booking-service-crud-endpoints
-env
 # Environment / secrets
 *.env
 api-gateway/.env
-main
+
