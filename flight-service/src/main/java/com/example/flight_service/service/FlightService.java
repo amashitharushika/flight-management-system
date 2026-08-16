@@ -27,6 +27,9 @@ public class FlightService {
     }
 
     public Flight updateFlight(Long id, Flight updated) {
+        if (!flightRepository.existsById(id)) {
+        throw new RuntimeException("Flight not found with id: " + id);
+    }
         updated.setId(id);
         return flightRepository.save(updated);
     }
