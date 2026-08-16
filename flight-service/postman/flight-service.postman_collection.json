@@ -1,0 +1,83 @@
+{
+  "info": {
+    "name": "flight-service",
+    "description": "Test client for the Flight Service (port 8081)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "apiKey", "value": "FLIGHT-SERVICE-SECRET-KEY-2026" }
+  ],
+  "item": [
+    {
+      "name": "Get all flights",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "X-API-KEY", "value": "{{apiKey}}" }],
+        "url": "{{baseUrl}}/api/flights"
+      }
+    },
+    {
+      "name": "Get flight by ID",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "X-API-KEY", "value": "{{apiKey}}" }],
+        "url": "{{baseUrl}}/api/flights/1"
+      }
+    },
+    {
+      "name": "Create flight",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "X-API-KEY", "value": "{{apiKey}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightNumber\": \"UL225\",\n  \"origin\": \"CMB\",\n  \"destination\": \"DXB\",\n  \"departureTime\": \"2026-09-01T08:00:00\",\n  \"arrivalTime\": \"2026-09-01T13:00:00\",\n  \"status\": \"SCHEDULED\",\n  \"seatsAvailable\": 180,\n  \"price\": 320.50\n}"
+        },
+        "url": "{{baseUrl}}/api/flights"
+      }
+    },
+    {
+      "name": "Update flight",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "X-API-KEY", "value": "{{apiKey}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"flightNumber\": \"UL225\",\n  \"origin\": \"CMB\",\n  \"destination\": \"DXB\",\n  \"departureTime\": \"2026-09-01T08:00:00\",\n  \"arrivalTime\": \"2026-09-01T13:30:00\",\n  \"status\": \"DELAYED\",\n  \"seatsAvailable\": 175,\n  \"price\": 320.50\n}"
+        },
+        "url": "{{baseUrl}}/api/flights/1"
+      }
+    },
+    {
+      "name": "Delete flight",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "X-API-KEY", "value": "{{apiKey}}" }],
+        "url": "{{baseUrl}}/api/flights/1"
+      }
+    },
+    {
+      "name": "Search flights (origin/destination)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "X-API-KEY", "value": "{{apiKey}}" }],
+        "url": "{{baseUrl}}/api/flights/search?origin=CMB&destination=DXB"
+      }
+    },
+    {
+      "name": "Get all flights - NO KEY (should return 401)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/flights"
+      }
+    }
+  ]
+}
