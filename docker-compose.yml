@@ -30,13 +30,13 @@ services:
     depends_on:
       - user-db
 
- # flight-service:
-#    build: ./flight-service
- #   container_name: flight-service
-  #  ports:
-   #   - "8081:8081"
-    #networks:
-     # - fms-network
+  flight-service:
+    build: ./flight-service
+    container_name: flight-service
+    ports:
+      - "8081:8081"
+    networks:
+      - fms-network
 
 #  booking-service:
  #   build: ./booking-service
