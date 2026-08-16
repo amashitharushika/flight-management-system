@@ -22,6 +22,11 @@ public class ApiKeyFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
+         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            chain.doFilter(req, res);
+            return;
+        }
+
         // allow the H2 console and Swagger docs through without a key, for local debugging
         String uri = request.getRequestURI();
         if (uri.startsWith("/h2-console") || uri.startsWith("/swagger-ui") || uri.startsWith("/v3/api-docs")) {
