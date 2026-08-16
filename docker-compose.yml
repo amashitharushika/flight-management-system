@@ -20,11 +20,35 @@ services:
     networks:
       - fms-network
 
+  flight-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fms
+      POSTGRES_PASSWORD: fms_password
+      POSTGRES_DB: flightdb
+    volumes:
+      - flight-db-data:/var/lib/postgresql/data
+    networks:
+      - fms-network
+
+  booking-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fms
+      POSTGRES_PASSWORD: fms_password
+      POSTGRES_DB: bookingdb
+    volumes:
+      - booking-db-data:/var/lib/postgresql/data
+    networks:
+      - fms-network
+
   user-service:
     build: ./user-service
     container_name: user-service
     ports:
       - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/userdb
     networks:
       - fms-network
     depends_on:
@@ -35,16 +59,24 @@ services:
     container_name: flight-service
     ports:
       - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://flight-db:5432/flightdb
     networks:
       - fms-network
+    depends_on:
+      - flight-db
 
   booking-service:
     build: ./booking-service
     container_name: booking-service
     ports:
       - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://booking-db:5432/bookingdb
     networks:
       - fms-network
+    depends_on:
+      - booking-db
 
   api-gateway:
     build: ./api-gateway
@@ -75,4 +107,5 @@ services:
 
 volumes:
   user-db-data:
-
+  flight-db-data:
+  booking-db-data:
