@@ -32,10 +32,13 @@ public class FlightController {
         return ResponseEntity.ok(flightService.createFlight(flight));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Flight> updateFlight(@PathVariable Long id, @RequestBody Flight flight) {
-        return ResponseEntity.ok(flightService.updateFlight(id, flight));
+   @PutMapping("/{id}")
+public ResponseEntity<Flight> updateFlight(@PathVariable Long id, @RequestBody Flight flight) {
+    if (!flightService.getFlightById(id).isPresent()) {
+        return ResponseEntity.notFound().build();
     }
+    return ResponseEntity.ok(flightService.updateFlight(id, flight));
+}
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFlight(@PathVariable Long id) {
