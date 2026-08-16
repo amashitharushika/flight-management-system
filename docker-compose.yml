@@ -38,13 +38,13 @@ services:
     networks:
       - fms-network
 
-#  booking-service:
- #   build: ./booking-service
-  #  container_name: booking-service
-   # ports:
-    #  - "8082:8082"
-    #networks:
-     # - fms-network
+  booking-service:
+    build: ./booking-service
+    container_name: booking-service
+    ports:
+      - "8082:8082"
+    networks:
+      - fms-network
 
   api-gateway:
     build: ./api-gateway
@@ -58,20 +58,20 @@ services:
     depends_on:
       - redis
       - user-service
-    #  - flight-service
-    #  - booking-service
+      - flight-service
+      - booking-service
     networks:
       - fms-network
 
-#  frontend:
- #   build: ./frontend
-  #  container_name: frontend
-   # ports:
-    #  - "5500:80"
-    #depends_on:
-     # - api-gateway
-    #networks:
-     # - fms-network
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5500:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - fms-network
 
 volumes:
   user-db-data:
