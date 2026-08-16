@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flight Service — Admin</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <h1>✈️ Flight Service</h1>
+  <p class="subtitle">Flight Management System — Member A</p>
+</header>
+
+<main class="container">
+
+  <!-- Add / Edit form -->
+  <section class="card">
+    <h2 id="formTitle">Add New Flight</h2>
+    <form id="flightForm">
+      <input type="hidden" id="flightId">
+      <div class="grid">
+        <div class="field">
+          <label>Flight Number</label>
+          <input type="text" id="flightNumber" required placeholder="UL225">
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="status" required>
+            <option value="SCHEDULED">SCHEDULED</option>
+            <option value="DELAYED">DELAYED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Origin</label>
+          <input type="text" id="origin" required placeholder="CMB">
+        </div>
+        <div class="field">
+          <label>Destination</label>
+          <input type="text" id="destination" required placeholder="DXB">
+        </div>
+        <div class="field">
+          <label>Departure Time</label>
+          <input type="datetime-local" id="departureTime" required>
+        </div>
+        <div class="field">
+          <label>Arrival Time</label>
+          <input type="datetime-local" id="arrivalTime" required>
+        </div>
+        <div class="field">
+          <label>Seats Available</label>
+          <input type="number" id="seatsAvailable" required min="0" placeholder="180">
+        </div>
+        <div class="field">
+          <label>Price (USD)</label>
+          <input type="number" id="price" required min="0" step="0.01" placeholder="320.50">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" id="submitBtn" class="btn btn-primary">Add Flight</button>
+        <button type="button" id="cancelEditBtn" class="btn btn-secondary" style="display:none;">Cancel Edit</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Search -->
+  <section class="card">
+    <h2>Search Flights</h2>
+    <div class="search-row">
+      <input type="text" id="searchOrigin" placeholder="Origin (e.g. CMB)">
+      <input type="text" id="searchDestination" placeholder="Destination (e.g. DXB)">
+      <button id="searchBtn" class="btn btn-primary">Search</button>
+      <button id="clearSearchBtn" class="btn btn-secondary">Show All</button>
+    </div>
+  </section>
+
+  <!-- Flights table -->
+  <section class="card">
+    <div class="table-header">
+      <h2>Flights</h2>
+      <span id="flightCount" class="badge">0</span>
+    </div>
+    <div id="statusMessage" class="status-message"></div>
+    <div class="table-wrap">
+      <table id="flightsTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Flight #</th>
+            <th>Route</th>
+            <th>Departure</th>
+            <th>Arrival</th>
+            <th>Status</th>
+            <th>Seats</th>
+            <th>Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="flightsBody">
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
