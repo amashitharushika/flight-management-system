@@ -57,6 +57,13 @@ public class UserController {
         return ResponseEntity.ok().body("{\"valid\": " + valid + "}");
     }
 
+    @GetMapping("/by-email")
+    public ResponseEntity<?> getUserByEmail(@RequestParam String email) {
+        return userService.getByEmail(email)
+            .map(u -> ResponseEntity.ok(new LoginResponse(u.getId(), u.getName(), u.getApiKey())))
+            .orElse(ResponseEntity.notFound().build());
+    }
+
     private Object errorBody(String message) {
         return "{\"error\": \"" + message + "\"}";
     }

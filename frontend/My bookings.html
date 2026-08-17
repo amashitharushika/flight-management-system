@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Bookings — Skyward</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="page">
+  <div id="nav-root"></div>
+
+  <div class="content">
+    <div class="hero" style="padding-top: 12px; padding-bottom: 24px;">
+      <span class="eyebrow">Your trips</span>
+      <h1 style="font-size: 34px;">My bookings</h1>
+    </div>
+
+    <div class="board" id="bookings-list"></div>
+    <div class="empty-state" id="empty-state" style="display:none;">
+      <div class="icon">🧳</div>
+      <p>No bookings yet — go find a flight worth taking.</p>
+      <a href="search.html" class="btn btn-primary" style="margin-top: 12px;">Search flights</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/clouds.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/user.js"></script>
+<script>
+  renderNav("bookings");
+  let currentUser = null;
+
+  function bookingRow(b) {
+    const statusClass = b.status === "CANCELLED" ? "status-cancelled" : "status-confirmed";
+    const date = new Date(b.bookingDate).toLocaleDateString([], { dateStyle: "medium" });
+    return `
+      <div class="board-row">
+        <div class="board-code mono">#${b.id}</div>
+        <div class="board-route">
+          <span class="cities">${b.passengerName} · Seat ${b.seatNumber}</span>
+          <span class="times">Flight ${b.flightId} · booked ${date}</span>
+        </div>
+        <span class="status-pill ${statusClass}">${b.status}</span>
+        ${b.status !== "CANCELLED"
+          ? `<button class="btn btn-danger" onclick="cancelBooking(${b.id})">Cancel</button>`
+          : `<span></span>`}
+      </div>
+    `;
+  }
+
+  async function loadBookings() {
+    const userId = currentUser.id ?? currentUser.userId;
+    const res = await fetch(`${CONFIG.GATEWAY_BASE}/api/bookings/user/${userId}`, { credentials: "include" });
+    const bookings = res.ok ? await res.json() : [];
+
+    const listEl = document.getElementById("bookings-list");
+    const emptyEl = document.getElementById("empty-state");
+
+    if (bookings.length === 0) {
+      listEl.innerHTML = "";
+      emptyEl.style.display = "block";
+    } else {
+      emptyEl.style.display = "none";
+      listEl.innerHTML = bookings.map(bookingRow).join("");
+    }
+  }
+
+  async function cancelBooking(id) {
+    await fetch(`${CONFIG.GATEWAY_BASE}/api/bookings/${id}/cancel`, {
+      method: "PUT",
+      credentials: "include",
+    });
+    await loadBookings();
+  }
+
+  (async () => {
+    currentUser = await resolveCurrentUser();
+    if (currentUser) await loadBookings();
+  })();
+</script>
+</body>
+</html>

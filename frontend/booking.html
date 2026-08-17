@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Confirm Booking — Skyward</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="page">
+  <div id="nav-root"></div>
+
+  <div class="content" style="max-width: 560px;">
+    <div class="hero" style="padding-top: 12px; padding-bottom: 24px;">
+      <span class="eyebrow">Confirm</span>
+      <h1 style="font-size: 30px;">Almost there</h1>
+    </div>
+
+    <div class="cloud-card" id="flight-summary" style="margin-bottom: 24px;">
+      <p style="color: var(--ink-soft);">Loading flight details…</p>
+    </div>
+
+    <div class="cloud-card" id="booking-form-card" style="display:none;">
+      <form id="booking-form">
+        <div class="field">
+          <label for="passenger-name">Passenger name</label>
+          <input class="input" id="passenger-name" required />
+        </div>
+        <div class="field">
+          <label for="seat-number">Seat number</label>
+          <input class="input mono" id="seat-number" placeholder="e.g. 14A" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Confirm booking</button>
+      </form>
+    </div>
+
+    <div class="empty-state" id="error-state" style="display:none;">
+      <div class="icon">🌧️</div>
+      <p id="error-message">Something went wrong.</p>
+      <a href="search.html" class="btn btn-ghost" style="margin-top: 12px;">Back to search</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/clouds.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/user.js"></script>
+<script>
+  renderNav("search");
+  let currentUser = null;
+  let flight = null;
+
+  const params = new URLSearchParams(window.location.search);
+  const flightId = params.get("flightId");
+
+  function showError(message) {
+    document.getElementById("flight-summary").style.display = "none";
+    document.getElementById("booking-form-card").style.display = "none";
+    document.getElementById("error-state").style.display = "block";
+    document.getElementById("error-message").textContent = message;
+  }
+
+  async function loadFlight() {
+    if (!flightId) return showError("No flight was selected.");
+
+    const res = await fetch(`${CONFIG.GATEWAY_BASE}/api/flights/${flightId}`, { credentials: "include" });
+    if (!res.ok) return showError("That flight couldn't be found — it may have been removed.");
+
+    flight = await res.json();
+    const dep = new Date(flight.departureTime);
+    const arr = new Date(flight.arrivalTime);
+    const fmt = d => d.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+
+    document.getElementById("flight-summary").innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 12px;">
+        <span class="board-code mono">${flight.flightNumber}</span>
+        <span class="board-price">$${flight.price?.toFixed(2) ?? "-"}</span>
+      </div>
+      <h3 style="margin-bottom: 6px;">${flight.origin} → ${flight.destination}</h3>
+      <p class="mono" style="color: var(--ink-soft); font-size: 14px;">Departs ${fmt(dep)}</p>
+      <p class="mono" style="color: var(--ink-soft); font-size: 14px;">Arrives ${fmt(arr)}</p>
+    `;
+    document.getElementById("booking-form-card").style.display = "block";
+  }
+
+  document.getElementById("booking-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const passengerName = document.getElementById("passenger-name").value.trim();
+    const seatNumber = document.getElementById("seat-number").value.trim().toUpperCase();
+
+    const res = await fetch(`${CONFIG.GATEWAY_BASE}/api/bookings`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        flightId: Number(flightId),
+        userId: currentUser.id ?? currentUser.userId,
+        passengerName,
+        seatNumber,
+      }),
+    });
+
+    if (res.ok) {
+      window.location.href = "my-bookings.html";
+    } else {
+      showError("Couldn't confirm the booking — please try again.");
+    }
+  });
+
+  (async () => {
+    currentUser = await resolveCurrentUser();
+    if (currentUser) {
+      await loadFlight();
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Profile — Skyward</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="page">
+  <div id="nav-root"></div>
+
+  <div class="content" style="max-width: 520px;">
+    <div class="hero" style="padding-top: 12px; padding-bottom: 24px;">
+      <span class="eyebrow">Account</span>
+      <h1 style="font-size: 34px;">Your profile</h1>
+    </div>
+
+    <div class="cloud-card" style="text-align: center; margin-bottom: 20px;">
+      <img id="avatar" src="" alt="" style="width: 72px; height: 72px; border-radius: 50%; display: none; margin: 0 auto 14px; box-shadow: var(--shadow-sky);" />
+      <h3 id="profile-name">—</h3>
+      <p id="profile-email" style="color: var(--ink-soft); font-size: 14px;">—</p>
+    </div>
+
+    <div class="cloud-card">
+      <form id="profile-form">
+        <div class="field">
+          <label for="name">Name</label>
+          <input class="input" id="name" required />
+        </div>
+        <div class="field">
+          <label for="new-password">New password (optional)</label>
+          <input class="input" id="new-password" type="password" placeholder="Leave blank to keep unchanged" />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save changes</button>
+      </form>
+      <p id="save-confirm" style="display:none; color: var(--butter-deep); font-weight: 600; font-size: 14px; margin-top: 14px; text-align: center;">Saved.</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/clouds.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/user.js"></script>
+<script>
+  renderNav("profile");
+  let currentUser = null;
+
+  document.getElementById("profile-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const newPassword = document.getElementById("new-password").value;
+
+    const userId = currentUser.id ?? currentUser.userId;
+    const res = await fetch(`${CONFIG.GATEWAY_BASE}/api/users/${userId}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, password: newPassword || null }),
+    });
+
+    if (res.ok) {
+      const updated = await res.json();
+      document.getElementById("profile-name").textContent = updated.name;
+      document.getElementById("save-confirm").style.display = "block";
+      setTimeout(() => (document.getElementById("save-confirm").style.display = "none"), 2500);
+    }
+  });
+
+  (async () => {
+    currentUser = await resolveCurrentUser();
+    if (!currentUser) return;
+
+    document.getElementById("profile-name").textContent = currentUser.name || "—";
+    document.getElementById("profile-email").textContent = currentUser.email || "—";
+    document.getElementById("name").value = currentUser.name || "";
+
+    if (currentUser.picture) {
+      const avatar = document.getElementById("avatar");
+      avatar.src = currentUser.picture;
+      avatar.style.display = "inline-block";
+    }
+  })();
+</script>
+</body>
+</html>
