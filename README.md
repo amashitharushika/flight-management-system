@@ -64,12 +64,6 @@ Every microservice independently enforces its own API key on top of the Gateway'
 X-API-KEY: <service-specific-key>
 ```
 
-## Test credentials
-
-| Email | Password |
-|---|---|
-| (fill in a real registered test account) | (fill in) |
-
 ## Data persistence
 
 user-service uses PostgreSQL with a named Docker volume (`user-db-data`), so data survives container restarts and rebuilds — `docker compose down && docker compose up --build` will not wipe registered users. Flight and Booking services may use H2 (in-memory) or PostgreSQL depending on each owner's choice — see their respective sections in the project report.
