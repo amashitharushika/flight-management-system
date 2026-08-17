@@ -1,104 +1,88 @@
-# flight-service
+# Flight Management System
 
-Owns flights, routes, schedules, and search. Part of the Flight Management System
-microservices project (Member A's service).
+A microservices-based flight management system built for the Service-Oriented Computing coursework. Three independently deployable Spring Boot APIs — User & Auth, Flight, and Booking — sit behind a single Spring Cloud Gateway that handles authentication (Google OAuth 2.0, Backend-for-Frontend pattern), CORS, rate limiting, and per-service API key injection. The entire system runs with one command via Docker Compose.
 
-## Run locally
+## Architecture
+
+```
+Browser → API Gateway (OAuth2 + Redis rate limiting, :8080) → User Service (:8083, Postgres)
+                                                              → Flight Service (:8081)
+                                                              → Booking Service (:8082)
+```
+
+The Gateway is the only component the client ever talks to directly. It authenticates the user against Google, holds the resulting token server-side (never exposing it to the browser — the Backend-for-Frontend pattern), and relays it plus the correct per-service API key to whichever microservice a request targets.
+
+## Services
+
+| Service | Port | Database | Owner |
+|---|---|---|---|
+| api-gateway | 8080 | — | Person C |
+| user-service | 8083 | PostgreSQL | Person C |
+| flight-service | 8081 | H2 / PostgreSQL | Person A |
+| booking-service | 8082 | H2 / PostgreSQL | Person B |
+
+## Prerequisites
+
+- Docker Desktop (installed and running)
+- A Google Cloud OAuth 2.0 Client ID (see Setup below)
+
+## Setup
+
+1. Clone the repo.
+2. Create a file named `.env` in the repo root (this is git-ignored — never commit it) containing:
+```
+GOOGLE_CLIENT_ID=your-google-oauth-client-id
+GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
+```
+Ask a team member for these values, or create your own OAuth client in Google Cloud Console (APIs & Services → Credentials → OAuth client ID → Web application → authorized redirect URI: `http://localhost:8080/login/oauth2/code/google`).
+
+## Running the system
+
 ```bash
-cd flight-service
-./mvnw spring-boot:run
+docker compose up --build
 ```
-Runs on `http://localhost:8081`.
+This starts every service, Redis (for rate limiting), and PostgreSQL (for user-service), all networked together. First run takes a few minutes while images are pulled and services are built.
 
-## Database
-Runs on PostgreSQL (not H2) so data persists across restarts. Requires a local Postgres
-container running before starting the service:
-```bash
-docker run --name flightdb -e POSTGRES_USER=fms -e POSTGRES_PASSWORD=fms_password -e POSTGRES_DB=flightdb -p 5433:5432 -d postgres:16-alpine
+## Testing it
+
+Open a browser (not curl — this needs to follow a real OAuth redirect) and go to:
 ```
-Host port `5433` is used (not the default `5432`) to avoid a clash with user-service's Postgres
-container. Once running, `application.properties` connects automatically —
-no code changes needed after `docker run`.
-
-## Auth
-Every `/api/flights/**` request needs header:
+http://localhost:8080/api/users/1
 ```
-X-API-KEY: FLIGHT-SERVICE-SECRET-KEY-2026
+You should be redirected to Google's login screen. After logging in, the request completes and reaches user-service with an authenticated session.
+
+## API Documentation (Swagger)
+
+- User Service: `http://localhost:8083/swagger-ui.html`
+- Flight Service: `http://localhost:8081/swagger-ui.html`
+- Booking Service: `http://localhost:8082/swagger-ui.html`
+
+## API Key format
+
+Every microservice independently enforces its own API key on top of the Gateway's OAuth2 layer (defense in depth). The Gateway injects these automatically for authenticated traffic; for direct testing of an individual service, include:
 ```
-
-## Endpoints
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | /api/flights | List all flights |
-| GET | /api/flights/{id} | Get one flight |
-| POST | /api/flights | Create a flight |
-| PUT | /api/flights/{id} | Update a flight |
-| DELETE | /api/flights/{id} | Delete a flight |
-| GET | /api/flights/search?origin=&destination= | Search flights |
-
-## Docs
-Swagger UI: `http://localhost:8081/swagger-ui.html`
-
-## Testing
-Postman collection: `postman/flight-service.postman_collection.json`
-
-
-# booking-service
-
-Owns bookings, seat reservation, and cancellation. Part of the Flight Management System
-microservices project (Member B's service).
-
-## Run locally
-```bash
-cd booking-service
-./mvnw spring-boot:run
-```
-Runs on `http://localhost:8082`.
-
-## Database
-Runs on PostgreSQL (not H2) so data persists across restarts. Requires a local Postgres
-container running before starting the service:
-```bash
-docker run --name bookingdb -e POSTGRES_USER=fms -e POSTGRES_PASSWORD=fms_password -e POSTGRES_DB=bookingdb -p 5434:5432 -d postgres:16-alpine
-```
-Host port `5434` is used (not the default `5432`) to avoid a clash with user-service's and
-flight-service's Postgres containers. Once running, `application.properties` connects
-automatically — no code changes needed after `docker run`.
-
-## Auth
-Every `/api/bookings/**` request needs header:
-
-X-API-KEY: BOOKING-SERVICE-SECRET-KEY-2026
-
-## Endpoints
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | /api/bookings | Create a booking |
-| GET | /api/bookings/{id} | Get one booking |
-| GET | /api/bookings/user/{userId} | All bookings for a user |
-| PUT | /api/bookings/{id}/cancel | Cancel a booking (status → CANCELLED) |
-| DELETE | /api/bookings/{id} | Delete a booking |
-
-## Docs
-Swagger UI: `http://localhost:8082/swagger-ui.html`
-
-## UI
-A simple frontend for testing the API is available at `booking-service-ui/index.html`
-(open with VS Code Live Server, or any static file server).
-
-## Docker
-```bash
-docker build -t booking-service .
-docker run -p 8082:8082 booking-service
+X-API-KEY: <service-specific-key>
 ```
 
-## Testing
-Postman collection: `postman/booking-service.postman_collection.json`
+## Test credentials
 
-## Design Note
-`flightId` and `userId` in the `Booking` entity are plain numeric values, not foreign keys
-into another service's database. Each microservice owns its own data — booking-service
-never reaches directly into flight-service's or user-service's tables. Validating that a
-flight actually exists before creating a booking would require an HTTP call from
-booking-service to flight-service — a reasonable future enhancement, not required for
-the current scope.
+| Email | Password |
+|---|---|
+| (fill in a real registered test account) | (fill in) |
+
+## Data persistence
+
+user-service uses PostgreSQL with a named Docker volume (`user-db-data`), so data survives container restarts and rebuilds — `docker compose down && docker compose up --build` will not wipe registered users. Flight and Booking services may use H2 (in-memory) or PostgreSQL depending on each owner's choice — see their respective sections in the project report.
+
+## Repository structure
+
+```
+flight-management-system/
+├── api-gateway/
+├── user-service/
+├── flight-service/
+├── booking-service/
+├── frontend/            (client application)
+├── docker-compose.yml
+└── README.md
+```
