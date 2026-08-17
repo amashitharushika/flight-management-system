@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Search Flights — Skyward</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="page">
+  <div id="nav-root"></div>
+
+  <div class="content">
+    <div class="hero" style="padding-top: 12px; padding-bottom: 24px;">
+      <span class="eyebrow">Search</span>
+      <h1 style="font-size: 34px;">Where to, <span id="greet-name">traveller</span>?</h1>
+    </div>
+
+    <div class="cloud-card" style="margin-bottom: 32px;">
+      <form id="search-form">
+        <div class="field-row">
+          <div class="field">
+            <label for="origin">From</label>
+            <input class="input" id="origin" placeholder="e.g. CMB" required />
+          </div>
+          <div class="field">
+            <label for="destination">To</label>
+            <input class="input" id="destination" placeholder="e.g. DXB" required />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Search flights</button>
+      </form>
+    </div>
+
+    <h2 class="section-title" id="results-title" style="display:none;">Flights</h2>
+    <div class="board" id="results"></div>
+    <div class="empty-state" id="empty-state">
+      <div class="icon">☁️</div>
+      <p>Search above to see available flights.</p>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/clouds.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/user.js"></script>
+<script>
+  renderNav("search");
+  let currentUser = null;
+
+  function flightRow(f) {
+    const dep = new Date(f.departureTime);
+    const arr = new Date(f.arrivalTime);
+    const fmt = d => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const statusClass = f.status === "CANCELLED" ? "status-cancelled" : f.status === "DELAYED" ? "status-cancelled" : "status-scheduled";
+    return `
+      <div class="board-row">
+        <div class="board-code mono">${f.flightNumber}</div>
+        <div class="board-route">
+          <span class="cities">${f.origin} → ${f.destination}</span>
+          <span class="times">${fmt(dep)} – ${fmt(arr)} · ${f.seatsAvailable} seats left</span>
+        </div>
+        <div class="board-price">$${f.price?.toFixed(2) ?? "-"}</div>
+        <button class="btn btn-primary" onclick="bookFlight(${f.id})">Select</button>
+      </div>
+    `;
+  }
+
+  function bookFlight(flightId) {
+    window.location.href = `booking.html?flightId=${flightId}`;
+  }
+
+  document.getElementById("search-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const origin = document.getElementById("origin").value.trim().toUpperCase();
+    const destination = document.getElementById("destination").value.trim().toUpperCase();
+
+    const res = await fetch(
+      `${CONFIG.GATEWAY_BASE}/api/flights/search?origin=${origin}&destination=${destination}`,
+      { credentials: "include" }
+    );
+    const flights = res.ok ? await res.json() : [];
+
+    const resultsEl = document.getElementById("results");
+    const emptyEl = document.getElementById("empty-state");
+    const titleEl = document.getElementById("results-title");
+
+    if (flights.length === 0) {
+      resultsEl.innerHTML = "";
+      titleEl.style.display = "none";
+      emptyEl.style.display = "block";
+      emptyEl.querySelector("p").textContent = "No flights found for that route — try a different origin or destination.";
+    } else {
+      titleEl.style.display = "block";
+      emptyEl.style.display = "none";
+      resultsEl.innerHTML = flights.map(flightRow).join("");
+    }
+  });
+
+  (async () => {
+    currentUser = await resolveCurrentUser();
+    if (currentUser) {
+      document.getElementById("greet-name").textContent = currentUser.name?.split(" ")[0] || "traveller";
+    }
+  })();
+</script>
+</body>
+</html>
