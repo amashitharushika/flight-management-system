@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -15,11 +18,22 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    // HELPER METHOD: Ensures all details (including email) are sent to the frontend
+    private Map<String, Object> buildProfileResponse(User user) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", user.getId());
+        map.put("name", user.getName());
+        map.put("email", user.getEmail()); // The missing piece!
+        map.put("apiKey", user.getApiKey());
+        return map;
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
             User user = userService.register(request);
-            return ResponseEntity.ok(new LoginResponse(user.getId(), user.getName(), user.getApiKey()));
+            // Use the helper method here
+            return ResponseEntity.ok(buildProfileResponse(user));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(errorBody(e.getMessage()));
         }
@@ -37,7 +51,8 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id) {
         return userService.getById(id)
-                .map(u -> ResponseEntity.ok(new LoginResponse(u.getId(), u.getName(), u.getApiKey())))
+                // Use the helper method here
+                .map(u -> ResponseEntity.ok(buildProfileResponse(u)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -45,7 +60,8 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody RegisterRequest request) {
         try {
             User updated = userService.updateUser(id, request);
-            return ResponseEntity.ok(new LoginResponse(updated.getId(), updated.getName(), updated.getApiKey()));
+            // Use the helper method here
+            return ResponseEntity.ok(buildProfileResponse(updated));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorBody(e.getMessage()));
         }
@@ -60,7 +76,8 @@ public class UserController {
     @GetMapping("/by-email")
     public ResponseEntity<?> getUserByEmail(@RequestParam String email) {
         return userService.getByEmail(email)
-            .map(u -> ResponseEntity.ok(new LoginResponse(u.getId(), u.getName(), u.getApiKey())))
+            // Use the helper method here
+            .map(u -> ResponseEntity.ok(buildProfileResponse(u)))
             .orElse(ResponseEntity.notFound().build());
     }
 
