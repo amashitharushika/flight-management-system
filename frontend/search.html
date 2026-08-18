@@ -29,7 +29,44 @@
             <input class="input" id="destination" placeholder="e.g. DXB" required />
           </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Search flights</button>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="date">Departure date</label>
+            <input class="input" type="date" id="date" />
+          </div>
+          <div class="field">
+            <label for="max-price">Max price</label>
+            <input class="input" type="number" id="max-price" min="0" step="1" placeholder="Any" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="status">Status</label>
+            <select class="input" id="status">
+              <option value="">Any status</option>
+              <option value="SCHEDULED">Scheduled</option>
+              <option value="DELAYED">Delayed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sort">Sort by</label>
+            <select class="input" id="sort">
+              <option value="departureTime:asc">Departure time (earliest)</option>
+              <option value="departureTime:desc">Departure time (latest)</option>
+              <option value="price:asc">Price (low to high)</option>
+              <option value="price:desc">Price (high to low)</option>
+              <option value="seatsAvailable:desc">Seats available</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap: 12px;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">Search flights</button>
+          <button type="button" id="clear-filters" class="btn btn-ghost">Clear filters</button>
+        </div>
       </form>
     </div>
 
@@ -55,15 +92,19 @@
     const arr = new Date(f.arrivalTime);
     const fmt = d => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     const statusClass = f.status === "CANCELLED" ? "status-cancelled" : f.status === "DELAYED" ? "status-cancelled" : "status-scheduled";
+    const soldOut = (f.seatsAvailable ?? 0) <= 0;
+    const bookable = f.status !== "CANCELLED" && !soldOut;
+    const buttonLabel = f.status === "CANCELLED" ? "Cancelled" : soldOut ? "Sold out" : "Select";
     return `
-      <div class="board-row">
+      <div class="board-row board-row-5col">
         <div class="board-code mono">${f.flightNumber}</div>
         <div class="board-route">
           <span class="cities">${f.origin} → ${f.destination}</span>
           <span class="times">${fmt(dep)} – ${fmt(arr)} · ${f.seatsAvailable} seats left</span>
         </div>
+        <span class="status-pill ${statusClass}">${f.status}</span>
         <div class="board-price">$${f.price?.toFixed(2) ?? "-"}</div>
-        <button class="btn btn-primary" onclick="bookFlight(${f.id})">Select</button>
+        <button class="btn btn-primary" ${bookable ? "" : "disabled"} onclick="bookFlight(${f.id})">${buttonLabel}</button>
       </div>
     `;
   }
@@ -72,13 +113,29 @@
     window.location.href = `booking.html?flightId=${flightId}`;
   }
 
+  document.getElementById("clear-filters").addEventListener("click", () => {
+    document.getElementById("date").value = "";
+    document.getElementById("max-price").value = "";
+    document.getElementById("status").value = "";
+    document.getElementById("sort").value = "departureTime:asc";
+  });
+
   document.getElementById("search-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const origin = document.getElementById("origin").value.trim().toUpperCase();
     const destination = document.getElementById("destination").value.trim().toUpperCase();
+    const date = document.getElementById("date").value;
+    const maxPrice = document.getElementById("max-price").value;
+    const status = document.getElementById("status").value;
+    const [sortBy, sortDir] = document.getElementById("sort").value.split(":");
+
+    const params = new URLSearchParams({ origin, destination, sortBy, sortDir });
+    if (date) params.set("date", date);
+    if (maxPrice) params.set("maxPrice", maxPrice);
+    if (status) params.set("status", status);
 
     const res = await fetch(
-      `${CONFIG.GATEWAY_BASE}/api/flights/search?origin=${origin}&destination=${destination}`,
+      `${CONFIG.GATEWAY_BASE}/api/flights/search?${params.toString()}`,
       { credentials: "include" }
     );
     const flights = res.ok ? await res.json() : [];
@@ -91,10 +148,11 @@
       resultsEl.innerHTML = "";
       titleEl.style.display = "none";
       emptyEl.style.display = "block";
-      emptyEl.querySelector("p").textContent = "No flights found for that route — try a different origin or destination.";
+      emptyEl.querySelector("p").textContent = "No flights found — try different filters or a different route.";
     } else {
       titleEl.style.display = "block";
       emptyEl.style.display = "none";
+      titleEl.textContent = `Flights (${flights.length})`;
       resultsEl.innerHTML = flights.map(flightRow).join("");
     }
   });
