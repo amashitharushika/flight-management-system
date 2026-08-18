@@ -3,9 +3,11 @@ package com.example.flight_service.controller;
 import com.example.flight_service.model.Flight;
 import com.example.flight_service.service.FlightService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -32,13 +34,13 @@ public class FlightController {
         return ResponseEntity.ok(flightService.createFlight(flight));
     }
 
-   @PutMapping("/{id}")
-public ResponseEntity<Flight> updateFlight(@PathVariable Long id, @RequestBody Flight flight) {
-    if (!flightService.getFlightById(id).isPresent()) {
-        return ResponseEntity.notFound().build();
+    @PutMapping("/{id}")
+    public ResponseEntity<Flight> updateFlight(@PathVariable Long id, @RequestBody Flight flight) {
+        if (!flightService.getFlightById(id).isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(flightService.updateFlight(id, flight));
     }
-    return ResponseEntity.ok(flightService.updateFlight(id, flight));
-}
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFlight(@PathVariable Long id) {
@@ -46,8 +48,17 @@ public ResponseEntity<Flight> updateFlight(@PathVariable Long id, @RequestBody F
         return ResponseEntity.noContent().build();
     }
 
+    // UPDATED: Advanced Search Endpoint mapping to frontend parameters
     @GetMapping("/search")
-    public List<Flight> searchFlights(@RequestParam String origin, @RequestParam String destination) {
-        return flightService.searchFlights(origin, destination);
+    public List<Flight> searchFlights(
+            @RequestParam(required = false) String origin,
+            @RequestParam(required = false) String destination,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false, defaultValue = "departureTime") String sortBy,
+            @RequestParam(required = false, defaultValue = "asc") String sortDir) {
+        
+        return flightService.searchFlights(origin, destination, date, maxPrice, status, sortBy, sortDir);
     }
 }
