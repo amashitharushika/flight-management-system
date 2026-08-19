@@ -37,25 +37,21 @@ public class FlightService {
         Specification<Flight> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // 1. Origin Filter
             if (origin != null && !origin.trim().isEmpty()) {
                 predicates.add(criteriaBuilder.equal(root.get("origin"), origin.trim()));
             }
-            // 2. Destination Filter
             if (destination != null && !destination.trim().isEmpty()) {
                 predicates.add(criteriaBuilder.equal(root.get("destination"), destination.trim()));
             }
-            // 3. Date Filter (Converts YYYY-MM-DD to a full day range)
             if (date != null) {
+                // Translates the HTML YYYY-MM-DD into a full 24-hour range
                 LocalDateTime startOfDay = date.atStartOfDay();
                 LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
                 predicates.add(criteriaBuilder.between(root.get("departureTime"), startOfDay, endOfDay));
             }
-            // 4. Max Price Filter
             if (maxPrice != null) {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
             }
-            // 5. Status Filter
             if (status != null && !status.trim().isEmpty()) {
                 predicates.add(criteriaBuilder.equal(root.get("status"), status.trim()));
             }
@@ -63,11 +59,10 @@ public class FlightService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
-        // Handle Sorting
+        // Handle Sorting direction
         Sort.Direction direction = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Sort sort = Sort.by(direction, (sortBy != null && !sortBy.trim().isEmpty()) ? sortBy : "departureTime");
 
-        // Execute the dynamic query
         return flightRepository.findAll(spec, sort);
     }
 }

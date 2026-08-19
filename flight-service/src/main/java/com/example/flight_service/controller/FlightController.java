@@ -18,9 +18,7 @@ public class FlightController {
     private FlightService flightService;
 
     @GetMapping
-    public List<Flight> getAllFlights() {
-        return flightService.getAllFlights();
-    }
+    public List<Flight> getAllFlights() { return flightService.getAllFlights(); }
 
     @GetMapping("/{id}")
     public ResponseEntity<Flight> getFlightById(@PathVariable Long id) {
@@ -36,7 +34,7 @@ public class FlightController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Flight> updateFlight(@PathVariable Long id, @RequestBody Flight flight) {
-        if (!flightService.getFlightById(id).isPresent()) {
+        if (flightService.getFlightById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(flightService.updateFlight(id, flight));
@@ -48,7 +46,6 @@ public class FlightController {
         return ResponseEntity.noContent().build();
     }
 
-    // UPDATED: Advanced Search Endpoint mapping to frontend parameters
     @GetMapping("/search")
     public List<Flight> searchFlights(
             @RequestParam(required = false) String origin,
@@ -58,7 +55,7 @@ public class FlightController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false, defaultValue = "departureTime") String sortBy,
             @RequestParam(required = false, defaultValue = "asc") String sortDir) {
-        
+
         return flightService.searchFlights(origin, destination, date, maxPrice, status, sortBy, sortDir);
     }
 }

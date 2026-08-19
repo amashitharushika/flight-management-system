@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface FlightRepository extends JpaRepository<Flight, Long>, JpaSpecificationExecutor<Flight> {
-    // No massive @Query needed anymore! Spring handles it dynamically.
+    // Spring Boot will now handle dynamic filters automatically!
 }
