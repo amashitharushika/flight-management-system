@@ -31,6 +31,10 @@
           <label for="seat-number">Seat number</label>
           <input class="input mono" id="seat-number" placeholder="e.g. 14A" required />
         </div>
+        <div class="field">
+          <label for="card-number">Credit card number</label>
+          <input type="text" class="input mono" id="card-number" placeholder="1234567890123456" required minlength="12" />
+        </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Confirm booking</button>
       </form>
     </div>
@@ -89,6 +93,9 @@
     e.preventDefault();
     const passengerName = document.getElementById("passenger-name").value.trim();
     const seatNumber = document.getElementById("seat-number").value.trim().toUpperCase();
+    
+    // Grab the new card number value
+    const cardNumber = document.getElementById("card-number").value.trim();
 
     const res = await fetch(`${CONFIG.GATEWAY_BASE}/api/bookings`, {
       method: "POST",
@@ -99,6 +106,7 @@
         userId: currentUser.id ?? currentUser.userId,
         passengerName,
         seatNumber,
+        cardNumber // Send it securely to your backend
       }),
     });
 

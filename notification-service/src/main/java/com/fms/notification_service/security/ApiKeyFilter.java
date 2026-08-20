@@ -1,4 +1,4 @@
-package com.fms.bookingservice.security;
+package com.fms.notification_service.security;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,7 +10,7 @@ import java.io.IOException;
 @Component
 public class ApiKeyFilter implements Filter {
 
-    @Value("${booking.api.key}")
+    @Value("${notification.api.key}")
     private String validApiKey;
 
     private static final String HEADER_NAME = "X-API-KEY";
@@ -20,10 +20,10 @@ public class ApiKeyFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
-
         String path = request.getRequestURI();
 
-        boolean isPublic = path.startsWith("/swagger-ui")
+        boolean isPublic = path.startsWith("/h2-console")
+                || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs");
 
         if (isPublic) {

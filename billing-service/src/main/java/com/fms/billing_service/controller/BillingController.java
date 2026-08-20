@@ -1,4 +1,4 @@
-package main.java.com.fms.billing_service.controller;
+package com.fms.billing_service.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

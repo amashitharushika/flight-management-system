@@ -344,3 +344,195 @@ button, input, select {
   color: var(--ink-faint);
   padding: 30px 20px 10px;
 }
+
+.hero-photo-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+  color: #fff;
+}
+
+.hero-photo-page.hero-photo-night {
+  background:
+    linear-gradient(180deg, rgba(10, 15, 30, 0.55) 0%, rgba(10, 15, 30, 0.25) 45%, rgba(5, 10, 20, 0.75) 100%),
+    url('../assets/images/hero-night.jpg') center 60% / cover no-repeat;
+}
+
+/* Top nav overlaid on the photo */
+.hero-nav {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92%, 900px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(20, 30, 45, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 10px 12px 10px 20px;
+}
+
+.hero-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: #fff;
+}
+.hero-nav-brand .plane-icon { width: 20px; height: 20px; }
+
+.hero-nav-links { display: flex; gap: 22px; }
+.hero-nav-links a {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  transition: color 0.15s ease;
+}
+.hero-nav-links a:hover { color: #fff; }
+
+@media (max-width: 700px) {
+  .hero-nav-links { display: none; }
+}
+
+.btn-hero-login {
+  background: #fff;
+  color: var(--ink);
+  padding: 10px 22px;
+  font-size: 14px;
+}
+.btn-hero-login:hover { background: var(--butter); }
+
+/* Center content on index */
+.hero-photo-content {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  padding: 0 24px;
+}
+
+.hero-photo-eyebrow {
+  display: inline-block;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  padding: 7px 16px;
+  border-radius: 999px;
+  margin-bottom: 24px;
+}
+
+.hero-photo-title {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: clamp(42px, 7vw, 72px);
+  line-height: 1.05;
+  color: #fff;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  margin-bottom: 18px;
+}
+
+.hero-photo-subtitle {
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 38px;
+}
+
+.hero-photo-cta { display: flex; justify-content: center; }
+
+.btn-hero-primary {
+  background: #fff;
+  color: var(--ink);
+  padding: 15px 30px;
+  font-size: 15px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+.btn-hero-primary:hover {
+  background: var(--butter);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+}
+.btn-hero-primary svg { width: 20px; height: 20px; }
+
+/* Scroll cue */
+.hero-photo-scroll {
+  position: absolute;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.hero-photo-scroll-arrow { animation: bob 2s ease-in-out infinite; }
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+.hero-photo-footer {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 600px) {
+  .hero-photo-scroll { display: none; }
+}
+
+/* ---------- Morning hero banner (search.html) ---------- */
+.hero-banner {
+  position: relative;
+  height: 300px;
+  width: 100%;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(20, 30, 45, 0.25) 0%, rgba(20, 30, 45, 0.55) 100%),
+    url('../assets/images/hero-morning.jpg') center 55% / cover no-repeat;
+}
+
+.hero-banner-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.hero-banner-title {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 40px);
+  color: #fff;
+  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.35);
+  margin-top: 12px;
+}
+
+@media (max-width: 700px) {
+  .hero-banner { height: 220px; }
+}
