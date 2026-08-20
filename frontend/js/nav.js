@@ -16,7 +16,7 @@ function renderNav(activePage) {
     <nav class="nav">
       <a class="nav-brand" href="search.html">
         ${PLANE_ICON}
-        <span>Skyward</span>
+        <span>Flight or Fight</span>
       </a>
       <div class="nav-links">
         ${links.map(l => `<a href="${l.href}" class="${l.key === activePage ? "active" : ""}">${l.label}</a>`).join("")}

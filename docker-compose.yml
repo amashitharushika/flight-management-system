@@ -104,6 +104,28 @@ services:
     networks:
       - fms-network
 
+  notification-service:
+    build:
+      context: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8084:8084"
+    restart: on-failure
+    env_file:
+      - .env
+    networks:
+      - fms-network
+
+  billing-service:
+    build:
+      context: ./billing-service
+    container_name: billing-service
+    ports:
+      - "8085:8085"
+    restart: on-failure
+    networks:
+      - fms-network
+      
   frontend:
     build: ./frontend
     container_name: frontend

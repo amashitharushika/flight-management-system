@@ -1,4 +1,4 @@
-package main.java.com.fms.notification_service.security;
+package com.fms.notification_service.security;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,7 +10,7 @@ import java.io.IOException;
 @Component
 public class ApiKeyFilter implements Filter {
 
-    @Value("${user.api.key}")
+    @Value("${notification.api.key}")
     private String validApiKey;
 
     private static final String HEADER_NAME = "X-API-KEY";
@@ -23,8 +23,6 @@ public class ApiKeyFilter implements Filter {
         String path = request.getRequestURI();
 
         boolean isPublic = path.startsWith("/h2-console")
-                || path.equals("/api/users/register")
-                || path.equals("/api/users/login")
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs");
 

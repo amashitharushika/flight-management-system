@@ -17,7 +17,7 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
-        return ResponseEntity.ok(bookingService.createBooking(booking));
+        return ResponseEntity.ok(bookingService.createBooking(booking, booking.getCardNumber()));
     }
 
     @GetMapping("/{id}")
@@ -42,8 +42,9 @@ public class BookingController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
+    public ResponseEntity<?> deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Booking with ID " + id + " deleted successfully!");
     }
+
 }

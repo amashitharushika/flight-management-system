@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Table(name = "bookings")
-@Data
+@Data 
 public class Booking {
 
     @Id
@@ -19,9 +19,11 @@ public class Booking {
     private String passengerName;
     private String seatNumber;
 
-    // The date format annotation belongs right here:
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime bookingDate;
     
     private String status;   // CONFIRMED, CANCELLED
+
+    @Transient
+    private String cardNumber;
 }
